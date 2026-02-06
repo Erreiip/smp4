@@ -1,6 +1,10 @@
 use std::fs::{File};
 use std::io::Read;
-use sha3::{Digest, Sha3_256};
+
+use crate::hash::HashSha3;
+
+mod hash;
+use hash::Hasher;
 
 fn main() {
 
@@ -13,15 +17,11 @@ fn main() {
         },
     };
 
-    let mut hasher = hash_create();
+    let mut hasher = HashSha3::create_hasher();
 
     hasher.update(buffer);
 
-    println!("{:x}", hasher.finalize());
-}
-
-fn hash_create() -> Sha3_256 {
-    return Sha3_256::new();
+    println!("{:?}", hasher.finalize());
 }
 
 fn read_file(path: &str) -> Result<Vec<u8>, &str> {
