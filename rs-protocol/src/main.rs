@@ -1,10 +1,10 @@
 use std::fs::{File};
 use std::io::Read;
 
-use crate::hash::HashSha3;
-
 mod hash;
-use hash::Hasher;
+use crate::hash::hasher::Hasher;
+use crate::hash::hashsh3::HashSha3;
+
 
 fn main() {
 
