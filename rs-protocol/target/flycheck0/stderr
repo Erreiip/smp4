@@ -1,12 +1,92 @@
-   0.025631951s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint: stale: changed "/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs"
-   0.025652489s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:           (vs) "/home/fmfp1495/cours/smp4/rs-protocol/target/debug/.fingerprint/rs-protocol-aa766bde56c1ad64/dep-bin-rs-protocol"
-   0.025658650s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1770625368, nanos: 160267043 } < FileTime { seconds: 1770625368, nanos: 891668277 }
-   0.025711259s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint: fingerprint dirty for rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol)/Check { test: false }/TargetInner { name: "rs-protocol", doc: true, ..: with_path("/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs", Edition2024) }
-   0.025724854s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/home/fmfp1495/cours/smp4/rs-protocol/target/debug/.fingerprint/rs-protocol-aa766bde56c1ad64/dep-bin-rs-protocol", reference_mtime: FileTime { seconds: 1770625368, nanos: 160267043 }, stale: "/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs", stale_mtime: FileTime { seconds: 1770625368, nanos: 891668277 } }))
-   0.026767060s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint: stale: changed "/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs"
-   0.026776658s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:           (vs) "/home/fmfp1495/cours/smp4/rs-protocol/target/debug/.fingerprint/rs-protocol-39981ac2ebe9aa70/dep-test-bin-rs-protocol"
-   0.026781557s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1770625368, nanos: 160267043 } < FileTime { seconds: 1770625368, nanos: 891668277 }
-   0.026816753s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint: fingerprint dirty for rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol)/Check { test: true }/TargetInner { name: "rs-protocol", doc: true, ..: with_path("/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs", Edition2024) }
-   0.026825880s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/home/fmfp1495/cours/smp4/rs-protocol/target/debug/.fingerprint/rs-protocol-39981ac2ebe9aa70/dep-test-bin-rs-protocol", reference_mtime: FileTime { seconds: 1770625368, nanos: 160267043 }, stale: "/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs", stale_mtime: FileTime { seconds: 1770625368, nanos: 891668277 } }))
+   0.042860560s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint: fingerprint error for rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol)/Check { test: false }/TargetInner { name: "rs-protocol", doc: true, ..: with_path("/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs", Edition2024) }
+   0.042913509s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/fmfp1495/cours/smp4/rs-protocol/target/debug/.fingerprint/rs-protocol-20c3dbd0a42a979a/bin-rs-protocol`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: cargo_util::paths::read_bytes
+   1: cargo_util::paths::read
+   2: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   3: cargo::core::compiler::fingerprint::prepare_target
+   4: cargo::core::compiler::compile
+   5: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   6: cargo::ops::cargo_compile::compile_ws
+   7: cargo::ops::cargo_compile::compile_with_exec
+   8: cargo::ops::cargo_compile::compile
+   9: cargo::commands::check::exec
+  10: <cargo::cli::Exec>::exec
+  11: cargo::main
+  12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  13: std::rt::lang_start::<()>::{closure#0}
+  14: core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/core/src/ops/function.rs:287:21
+  15: std::panicking::catch_unwind::do_call
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:581:40
+  16: std::panicking::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:544:19
+  17: std::panic::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panic.rs:359:14
+  18: std::rt::lang_start_internal::{{closure}}
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/rt.rs:175:24
+  19: std::panicking::catch_unwind::do_call
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:581:40
+  20: std::panicking::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:544:19
+  21: std::panic::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panic.rs:359:14
+  22: std::rt::lang_start_internal
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/rt.rs:171:5
+  23: main
+  24: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  25: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  26: <unknown>
+   0.205009403s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint: fingerprint error for rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol)/Check { test: true }/TargetInner { name: "rs-protocol", doc: true, ..: with_path("/home/fmfp1495/cours/smp4/rs-protocol/src/main.rs", Edition2024) }
+   0.205040756s  INFO prepare_target{force=false package_id=rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol) target="rs-protocol"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/fmfp1495/cours/smp4/rs-protocol/target/debug/.fingerprint/rs-protocol-7e128669f8eb9ffd/test-bin-rs-protocol`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: cargo_util::paths::read_bytes
+   1: cargo_util::paths::read
+   2: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   3: cargo::core::compiler::fingerprint::prepare_target
+   4: cargo::core::compiler::compile
+   5: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   6: cargo::ops::cargo_compile::compile_ws
+   7: cargo::ops::cargo_compile::compile_with_exec
+   8: cargo::ops::cargo_compile::compile
+   9: cargo::commands::check::exec
+  10: <cargo::cli::Exec>::exec
+  11: cargo::main
+  12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  13: std::rt::lang_start::<()>::{closure#0}
+  14: core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/core/src/ops/function.rs:287:21
+  15: std::panicking::catch_unwind::do_call
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:581:40
+  16: std::panicking::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:544:19
+  17: std::panic::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panic.rs:359:14
+  18: std::rt::lang_start_internal::{{closure}}
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/rt.rs:175:24
+  19: std::panicking::catch_unwind::do_call
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:581:40
+  20: std::panicking::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panicking.rs:544:19
+  21: std::panic::catch_unwind
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/panic.rs:359:14
+  22: std::rt::lang_start_internal
+             at /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/std/src/rt.rs:171:5
+  23: main
+  24: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  25: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  26: <unknown>
     Checking rs-protocol v0.1.0 (/home/fmfp1495/cours/smp4/rs-protocol)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33s

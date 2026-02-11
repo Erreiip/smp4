@@ -5,7 +5,6 @@ mod hash;
 use crate::hash::hasher::Hasher;
 use crate::hash::hashsh3::HashSha3;
 
-
 fn main() {
 
     let path = "test";
