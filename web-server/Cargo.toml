@@ -1,0 +1,20 @@
+[package]
+name = "SMP4_web_server"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+actix = "0.13.5"
+actix-web = "4.12.1"
+actix-web-httpauth = "0.8.2"
+actix-cors = "0.7.1"
+argonautica = "0.2.0"
+chrono = { version = "0.4.43", features = ["serde"] }
+dotenv = "0.15.0"
+hmac = "0.12.1"
+sha2 = "0.10.8"
+jwt = "0.16.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+sqlx = { version = "0.8.2", features = ["runtime-async-std", "postgres", "chrono", "tls-rustls"] }
+log = "0.4.29"
