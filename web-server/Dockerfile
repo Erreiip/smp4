@@ -1,7 +1,13 @@
 FROM rust:1.91.1-bullseye AS builder
 ARG BUILD_PATH=/app/build
 
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
 WORKDIR ${BUILD_PATH}
+
+ENV http_proxy ${HTTP_PROXY}
+ENV https_proxy ${HTTPS_PROXY}
 
 # Download needed dependencies to build the app
 RUN apt-get update && apt-get install -y \
@@ -17,7 +23,6 @@ RUN rustup target add x86_64-unknown-linux-musl
 COPY Cargo.toml Cargo.toml
 COPY src src
 COPY migrations migrations
-COPY .env .env
 
 # Build the executable
 RUN cargo build --release --target x86_64-unknown-linux-musl
