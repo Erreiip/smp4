@@ -1,0 +1,132 @@
+variables:
+  PROXY_HOST: "193.49.200.22"
+  PROXY_PORT: "3128"
+  BACK_CONTAINER_IMAGE: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAME-back"
+  BACK_CONTAINER_IMAGE_TAGGED: "$BACK_CONTAINER_IMAGE:$CI_COMMIT_SHA"
+  FRONT_CONTAINER_IMAGE: "$CI_REGISTRY_IMAGE/$CI_PROJECT_NAME-front"
+  FRONT_CONTAINER_IMAGE_TAGGED: "$FRONT_CONTAINER_IMAGE:$CI_COMMIT_SHA"
+
+stages:
+  - tests
+  - build
+  - deploy
+
+🐋front-build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - echo "managing $FRONT_CONTAINER_IMAGE_TAGGED"
+    - echo "VITE_API_URL=http://$VPS_URL:8443" >> web-client/.env
+    - /kaniko/executor
+      --build-arg HTTP_PROXY="http://$PROXY_HOST:$PROXY_PORT"
+      --build-arg HTTPS_PROXY="http://$PROXY_HOST:$PROXY_PORT"
+      --build-arg NO_PROXY="localhost,127.0.0.1"
+      --context web-client
+      --dockerfile web-client/Dockerfile
+      --destination "$FRONT_CONTAINER_IMAGE_TAGGED"
+    - echo "pushed $FRONT_CONTAINER_IMAGE_TAGGED"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
+    - when: manual
+
+🐋back-build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - echo "managing $BACK_CONTAINER_IMAGE_TAGGED"
+    - /kaniko/executor
+      --build-arg HTTP_PROXY="http://$PROXY_HOST:$PROXY_PORT"
+      --build-arg HTTPS_PROXY="http://$PROXY_HOST:$PROXY_PORT"
+      --build-arg NO_PROXY="localhost,127.0.0.1"
+      --context web-server
+      --dockerfile web-server/Dockerfile
+      --destination "$BACK_CONTAINER_IMAGE_TAGGED"
+    - echo "pushed $BACK_CONTAINER_IMAGE_TAGGED"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
+    - when: manual
+
+🐘db-migration:
+  stage: deploy
+  image: testcontainers/sshd:1.3.0
+  variables:
+    SSH_ENV_FILE: "/home/cicduser/.env"
+    SSH_MIGRATION_FOLDER: "/home/cicduser/migrations"
+  before_script:
+    # private key
+    - echo "$SSH_PRIVATE_KEY" > id_rsa
+    - chmod 600 id_rsa
+
+    # environment file
+    - echo "DATABASE_URL=postgres://$DATABASE_USER:$DATABASE_PASSWORD@localhost:5432/$DATABASE_TABLE" >> .env
+    - scp -o StrictHostKeyChecking=no -i id_rsa .env cicduser@$VPS_URL:$SSH_ENV_FILE
+
+    # migrations folder
+    - scp -r -o StrictHostKeyChecking=no -i id_rsa web-server/migrations cicduser@$VPS_URL:$SSH_MIGRATION_FOLDER
+  script:
+    - ssh -o StrictHostKeyChecking=no -i id_rsa cicduser@$VPS_URL "
+        /home/cicduser/.cargo/bin/sqlx migrate run
+      "
+  after_script:
+    - ssh -o StrictHostKeyChecking=no -i id_rsa cicduser@$VPS_URL "
+        rm $SSH_ENV_FILE &&
+        rm -r $SSH_MIGRATION_FOLDER
+      "
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
+    - when: manual
+
+🚀deploy:
+  stage: deploy
+  image: testcontainers/sshd:1.3.0
+  variables:
+    SSH_COMPOSE_FILE: "/home/cicduser/compose.yaml"
+    SSH_COMPOSE_ENV: "/home/cicduser/compose.env"
+  before_script:
+    # private key
+    - echo "$SSH_PRIVATE_KEY" > id_rsa
+    - chmod 600 id_rsa
+
+    # docker-compose environment file
+    - echo "FRONT_IMAGE=$FRONT_CONTAINER_IMAGE_TAGGED" >> compose.env
+    - echo "BACK_IMAGE=$BACK_CONTAINER_IMAGE_TAGGED" >> compose.env
+    - echo "BACK_URL=$VPS_URL:8443" >> compose.env
+    - echo "PG_PWD=$DATABASE_PASSWORD" >> compose.env
+    - echo "PG_USER=$DATABASE_USER" >> compose.env
+    - echo "PG_DB=$DATABASE_TABLE" >> compose.env
+    - echo "DOMAIN=$VPS_DOMAIN" >> compose.env
+    - echo "JWT_SECRET=$JWT_TOKEN" >> compose.env
+    - echo "HASH_SECRET=$HASH_SECRET" >> compose.env
+    - chmod 600 compose.env
+    - scp -o StrictHostKeyChecking=no -i id_rsa compose.env cicduser@$VPS_URL:$SSH_COMPOSE_ENV
+    
+    # docker-compose file
+    - scp -o StrictHostKeyChecking=no -i id_rsa compose.yaml cicduser@$VPS_URL:$SSH_COMPOSE_FILE
+
+    # docker login to our repository
+    - ssh -o StrictHostKeyChecking=no -i id_rsa cicduser@$VPS_URL "
+        docker login $CI_REGISTRY -u $REGISTRY_USER -p $REGISTRY_TOKEN
+      "
+  script:
+    - ssh -o StrictHostKeyChecking=no -i id_rsa cicduser@$VPS_URL "
+        docker compose -f $SSH_COMPOSE_FILE --env-file $SSH_COMPOSE_ENV down &&
+        docker compose -f $SSH_COMPOSE_FILE --env-file $SSH_COMPOSE_ENV pull &&
+        docker compose -f $SSH_COMPOSE_FILE --env-file $SSH_COMPOSE_ENV up -d
+      "
+  after_script:
+    - ssh -o StrictHostKeyChecking=no -i id_rsa cicduser@$VPS_URL "
+        rm $SSH_COMPOSE_ENV &&
+        rm $SSH_COMPOSE_FILE &&
+        docker logout $CI_REGISTRY
+      "
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
+    - when: manual
