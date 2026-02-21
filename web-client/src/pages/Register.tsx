@@ -70,22 +70,22 @@ export default function Register() {
                 <CardContent className="space-y-4">
                     <Field>
                         <FieldLabel htmlFor="username">Username</FieldLabel>
-                        <Input id="username" type="text" placeholder="Username" value={formData.username} onChange={handleChange} className={errors.username ? 'border-red-500' : ''} />
+                        <Input id="username" type="text" placeholder="Username" value={formData.username} onChange={handleChange} aria-invalid={!!errors.username} />
                         <FieldError>{errors.username}</FieldError>
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="email">Email</FieldLabel>
-                        <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} className={errors.email ? 'border-red-500' : ''} />
+                        <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} aria-invalid={!!errors.email} />
                         <FieldError>{errors.email}</FieldError>
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="password">Password</FieldLabel>
-                        <Input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className={errors.password ? 'border-red-500' : ''} />
+                        <Input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} aria-invalid={!!errors.password} />
                         <FieldError>{errors.password}</FieldError>
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
-                        <Input id="confirmPassword" type="password" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} className={errors.password ? 'border-red-500' : ''} />
+                        <Input id="confirmPassword" type="password" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} aria-invalid={!!errors.password} />
                         <FieldError>{errors.password}</FieldError>
                     </Field>
                     <Button
