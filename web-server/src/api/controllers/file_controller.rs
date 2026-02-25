@@ -1,12 +1,16 @@
-use std::fs;
-use actix_multipart::form::{json::Json as MpJson, tempfile::TempFile, MultipartForm};
-use actix_web::{post, web, HttpResponse, Responder};
-use actix_web::web::{Data, ServiceConfig};
-use serde::Deserialize;
-use std::io::Write;
 use crate::api::api_manager::AppState;
 use crate::database::repositories::users_repository::UsersRepository;
 use crate::services::jwt_service::JwtService;
+use actix_multipart::form::{MultipartForm, json::Json as MpJson, tempfile::TempFile};
+use actix_web::http::StatusCode;
+use actix_web::web::{Data, ServiceConfig};
+use actix_web::{HttpResponse, Responder, post, web};
+use actix_web_httpauth::extractors::bearer::BearerAuth;
+use serde::{Deserialize, Serialize};
+use serde_json::Number;
+use std::fs;
+use std::path::Path;
+use std::time::SystemTime;
 
 #[derive(Debug, Deserialize)]
 struct UploadFileMetadata {
@@ -44,7 +48,11 @@ struct SMP4Metadata {
 }
 
 #[post("")]
-async fn post_file(state: Data<AppState>, MultipartForm(form): MultipartForm<UploadFileRequest>, credentials: BearerAuth) -> impl Responder {
+async fn post_file(
+    state: Data<AppState>,
+    MultipartForm(form): MultipartForm<UploadFileRequest>,
+    credentials: BearerAuth,
+) -> impl Responder {
     let check_name = form.json.name.clone();
     if !check_name.ends_with(".mp4") {
         return HttpResponse::new(StatusCode::UNSUPPORTED_MEDIA_TYPE);
@@ -58,10 +66,13 @@ async fn post_file(state: Data<AppState>, MultipartForm(form): MultipartForm<Upl
         Ok(smp4_metadata) => match build_smp4video(form, smp4_metadata) {
             Ok((new_filename, smp4video)) => HttpResponse::Ok()
                 .content_type("application/octet-stream")
-                .insert_header(("Content-Disposition", format!("attachment; filename=\"{}\"", new_filename)))
+                .insert_header((
+                    "Content-Disposition",
+                    format!("attachment; filename=\"{}\"", new_filename),
+                ))
                 .body(smp4video),
-            Err(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR)
-        }
+            Err(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
+        },
         Err(_) => {
             log::error!("Failed to build SMP video metadata");
             HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR)
@@ -69,7 +80,11 @@ async fn post_file(state: Data<AppState>, MultipartForm(form): MultipartForm<Upl
     }
 }
 
-async fn build_smp4metadata(state: Data<AppState>, credentials: BearerAuth, description: String) -> Result<SMP4Metadata, ()> {
+async fn build_smp4metadata(
+    state: Data<AppState>,
+    credentials: BearerAuth,
+    description: String,
+) -> Result<SMP4Metadata, ()> {
     let token = credentials.token();
     let jwt_service = JwtService::new();
 
@@ -78,27 +93,28 @@ async fn build_smp4metadata(state: Data<AppState>, credentials: BearerAuth, desc
             let repo = UsersRepository::new(state.db.clone());
 
             match repo.get_user_by_id(claims.id).await {
-                Ok(user) => {
-                    Ok(SMP4Metadata {
-                        date: SystemTime::now(),
-                        author: user.username,
-                        oid: Number::from(1),
-                        description,
-                        email: user.email,
-                        license: String::from("tobedetermined"),
-                    })
-                },
+                Ok(user) => Ok(SMP4Metadata {
+                    date: SystemTime::now(),
+                    author: user.username,
+                    oid: Number::from(1),
+                    description,
+                    email: user.email,
+                    license: String::from("tobedetermined"),
+                }),
                 Err(e) => {
                     log::warn!("Failed to get user: {}", e);
                     Err(())
                 }
             }
         }
-        Err(_) => Err(())
+        Err(_) => Err(()),
     }
 }
 
-fn build_smp4video(form: UploadFileRequest, smp4_metadata: SMP4Metadata) -> Result<(String, Vec<u8>), ()> {
+fn build_smp4video(
+    form: UploadFileRequest,
+    smp4_metadata: SMP4Metadata,
+) -> Result<(String, Vec<u8>), ()> {
     log::info!("Used metadata: {:?}", smp4_metadata);
 
     let original_path = Path::new(&form.json.name);
@@ -120,12 +136,15 @@ fn build_smp4video(form: UploadFileRequest, smp4_metadata: SMP4Metadata) -> Resu
         Err(e) => {
             log::info!("Error during file reading : {}", e);
             Err(())
-        },
+        }
     }
 }
 
 #[post("/verify")]
-async fn verify_file(_state: Data<AppState>, MultipartForm(form): MultipartForm<VerifyFileRequest>) -> impl Responder {
+async fn verify_file(
+    _state: Data<AppState>,
+    MultipartForm(form): MultipartForm<VerifyFileRequest>,
+) -> impl Responder {
     let check_name = form.json.name.clone();
     if !check_name.ends_with(".smp4") {
         return HttpResponse::new(StatusCode::UNSUPPORTED_MEDIA_TYPE);
@@ -148,9 +167,5 @@ async fn verify_file(_state: Data<AppState>, MultipartForm(form): MultipartForm<
 }
 
 pub fn config(cfg: &mut ServiceConfig) {
-    cfg.service(
-        web::scope("file")
-            .service(post_file)
-            .service(verify_file)
-    );
+    cfg.service(web::scope("file").service(post_file).service(verify_file));
 }

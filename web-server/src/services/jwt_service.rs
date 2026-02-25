@@ -1,8 +1,8 @@
+use crate::database::repositories::users_repository::User;
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use crate::database::repositories::users_repository::User;
 
 pub struct JwtService {
     jwt_key: Hmac<Sha256>,
@@ -21,12 +21,14 @@ impl JwtService {
         JwtService { jwt_key }
     }
 
-    pub fn generate_token_from_user(&self, user : User) -> String {
+    pub fn generate_token_from_user(&self, user: User) -> String {
         let claims = TokenClaims { id: user.id };
         claims.sign_with_key(&self.jwt_key).unwrap()
     }
 
-    pub fn get_claims_from_token(&self, token : String) -> Result<TokenClaims, &str> {
-        token.verify_with_key(&self.jwt_key).map_err(|_| "Invalid token")
+    pub fn get_claims_from_token(&self, token: String) -> Result<TokenClaims, &str> {
+        token
+            .verify_with_key(&self.jwt_key)
+            .map_err(|_| "Invalid token")
     }
 }
