@@ -10,5 +10,5 @@ async fn main() -> std::io::Result<()> {
 	dotenv().ok();
 	env_logger::init();
 
-	api_manager::start().await
+    api_manager::start().await
 }
