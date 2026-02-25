@@ -1,4 +1,3 @@
-
 use crate::head::head::Head;
 
 pub struct HeadBuilder {
@@ -9,7 +8,6 @@ pub struct HeadBuilder {
 }
 
 impl HeadBuilder {
-
     pub fn new(
         doc_size: u64,
         metadata_size: u64,
@@ -21,16 +19,15 @@ impl HeadBuilder {
             metadata_size,
             hash_algos,
             signature_algo,
-        }
+        };
     }
 
     pub fn build(&self) -> Head {
-
         let head = Head {
             document_start: self.doc_size,
             metadata_start: self.metadata_size + self.doc_size,
             hash_algos: self.hash_algos.clone(),
-            signature_algo: self.signature_algo.clone()
+            signature_algo: self.signature_algo.clone(),
         };
 
         let buffer = head.encode();
@@ -40,7 +37,7 @@ impl HeadBuilder {
             document_start: self.doc_size + len,
             metadata_start: self.metadata_size + self.doc_size + len,
             hash_algos: self.hash_algos.clone(),
-            signature_algo: self.signature_algo.clone()
+            signature_algo: self.signature_algo.clone(),
         }
     }
 }
