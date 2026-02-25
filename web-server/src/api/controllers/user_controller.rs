@@ -33,7 +33,7 @@ async fn get_user(state: Data<AppState>, credentials: BearerAuth) -> impl Respon
                     HttpResponse::Ok().json(response_body)
                 },
                 Err(e) => {
-                    println!("Failed to get user: {}", e);
+                    log::warn!("Failed to get user: {}", e);
                     HttpResponse::Unauthorized().await.unwrap()
                 }
             }

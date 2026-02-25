@@ -17,6 +17,7 @@ services:
       - HASH_SECRET=${HASH_SECRET}
       - EXPOSE_IP=0.0.0.0
       - EXPOSE_PORT=8888
+      - RUST_LOG=info
   smp4_database:
     image: "postgres:16.11"
     restart: always

@@ -41,7 +41,7 @@ pub async fn start() -> std::io::Result<()> {
 		db: database,
     });
 
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
 		let bearer_middleware = HttpAuthentication::bearer(validator);
 		let cors = Cors::permissive();
         App::new()
@@ -54,7 +54,9 @@ pub async fn start() -> std::io::Result<()> {
 					.configure(user_controller::config)
 					.configure(file_controller::config)
 			)
-    }).bind((expose_ip, expose_port_int))?
-        .run()
-        .await
+    }).bind((expose_ip.clone(), expose_port_int))?;
+
+	log::info!("Server started on {}:{}", expose_ip, expose_port_int);
+
+	server.run().await
 }

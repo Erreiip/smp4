@@ -1,13 +1,21 @@
+use std::fs;
 use actix_multipart::form::{json::Json as MpJson, tempfile::TempFile, MultipartForm};
 use actix_web::{post, web, HttpResponse, Responder};
 use actix_web::web::{Data, ServiceConfig};
 use serde::Deserialize;
-use std::io::Write;
+use std::path::Path;
+use std::time::SystemTime;
+use actix_web::http::StatusCode;
+use actix_web_httpauth::extractors::bearer::BearerAuth;
+use serde_json::Number;
 use crate::api::api_manager::AppState;
+use crate::database::repositories::users_repository::UsersRepository;
+use crate::services::jwt_service::JwtService;
 
 #[derive(Debug, Deserialize)]
 struct Metadata {
     name: String,
+    description: String,
 }
 
 #[derive(Debug, MultipartForm)]
@@ -17,27 +25,85 @@ struct UploadFileRequest {
     json: MpJson<Metadata>,
 }
 
+#[derive(Debug)]
+struct SMP4Metadata {
+    date: SystemTime,
+    author: String,
+    oid: Number,
+    description: String,
+    email: String,
+    license: String,
+}
+
 #[post("")]
-async fn post_file(_state: Data<AppState>, MultipartForm(form): MultipartForm<UploadFileRequest>) -> impl Responder {
+async fn post_file(state: Data<AppState>, MultipartForm(form): MultipartForm<UploadFileRequest>, credentials: BearerAuth) -> impl Responder {
     let check_name = form.json.name.clone();
     if !check_name.ends_with(".mp4") {
-        return HttpResponse::BadRequest().body("Seuls les fichiers .mp4 sont acceptés.");
+        return HttpResponse::new(StatusCode::UNSUPPORTED_MEDIA_TYPE);
     }
 
     if form.file.size == 0 {
-        return HttpResponse::BadRequest().body("Le fichier est vide.");
+        return HttpResponse::new(StatusCode::NOT_ACCEPTABLE);
     }
 
-    let mut response_file = tempfile::NamedTempFile::new().unwrap();
-    writeln!(response_file, "Fichier reçu : {}", form.json.name).unwrap();
-    writeln!(response_file, "Taille : {} octets", form.file.size).unwrap();
+    let _ = build_smp4metadata(state, credentials, form.json.description.clone());
 
-    let file_path = response_file.path().to_owned();
-    let file_content = std::fs::read(file_path).unwrap();
+    let original_path = Path::new(&form.json.name);
+    if let Err(e) = fs::copy(form.file.file.path(), original_path) {
+        log::info!("Error during file saving : {}", e);
+        return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    let new_filename = form.json.name.replace(".mp4", ".smp4");
+    let new_path = Path::new(&new_filename);
+
+    if let Err(e) = fs::copy(original_path, new_path) {
+        log::info!("Error during file copy : {}", e);
+        return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    let file_content = match fs::read(new_path) {
+        Ok(content) => content,
+        Err(e) => {
+            log::info!("Error during file reading : {}", e);
+            return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
+        },
+    };
 
     HttpResponse::Ok()
-        .content_type("text/plain")
+        .content_type("application/octet-stream")
+        .insert_header(("Content-Disposition", format!("attachment; filename=\"{}\"", new_filename)))
         .body(file_content)
+}
+
+async fn build_smp4metadata(state: Data<AppState>, credentials: BearerAuth, description: String) -> Result<SMP4Metadata, ()> {
+    let token = credentials.token();
+    let jwt_service = JwtService::new();
+
+    match jwt_service.get_claims_from_token(String::from(token)) {
+        Ok(claims) => {
+            let repo = UsersRepository::new(state.db.clone());
+
+            match repo.get_user_by_id(claims.id).await {
+                Ok(user) => {
+                    Ok(SMP4Metadata {
+                        date: SystemTime::now(),
+                        author: user.username,
+                        oid: Number::from(1),
+                        description,
+                        email: user.email,
+                        license: String::from("tobedetermined"),
+                    })
+                },
+                Err(e) => {
+                    log::warn!("Failed to get user: {}", e);
+                    Err(())
+                }
+            }
+        }
+        Err(_) => Err(())
+    }
+
 }
 
 pub fn config(cfg: &mut ServiceConfig) {
