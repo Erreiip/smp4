@@ -7,7 +7,7 @@ use dotenv::dotenv;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-	dotenv().ok();
+    dotenv().ok();
 
-	api_manager::start().await
+    api_manager::start().await
 }
