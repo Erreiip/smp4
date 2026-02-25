@@ -2,7 +2,7 @@ pub mod head_proto {
     include!(concat!(env!("OUT_DIR"), "/head_proto.rs"));
 }
 
-use bytes::{BytesMut};
+use bytes::BytesMut;
 use prost::Message;
 
 use head_proto::HeadProto;
@@ -15,7 +15,6 @@ pub struct Head {
 }
 
 impl Head {
-
     pub fn encode(&self) -> Option<Vec<u8>> {
         let proto = HeadProto {
             document_start: self.document_start,
@@ -31,13 +30,12 @@ impl Head {
     }
 
     pub fn decode(to_decode: Vec<u8>) -> Option<Self> {
-
         let mut bytes_mut: BytesMut = BytesMut::with_capacity(to_decode.len());
         bytes_mut.extend_from_slice(&to_decode);
 
         let proto_values = match HeadProto::decode(bytes_mut) {
             Ok(value) => value,
-            Err(_) => return None
+            Err(_) => return None,
         };
 
         let head = Head {
