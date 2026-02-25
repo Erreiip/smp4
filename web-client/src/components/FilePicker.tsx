@@ -2,13 +2,14 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import Dropzone from "shadcn-dropzone";
-import { IoCloudUploadSharp, IoTrash } from "react-icons/io5";
+import { IoTrash } from "react-icons/io5";
 import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "./ui/item";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { FaRegFileAlt } from "react-icons/fa";
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { MdOutlineCloudUpload } from "react-icons/md";
 
 function formatBytes(bytes: number) {
     if (bytes === 0) return "0 B";
@@ -40,62 +41,60 @@ export default function FilePicker() {
     }
 
     return (
-        <div className="min-h-xl flex items-center flex-col justify-center">
-            <Card className="w-4xl">
-                <CardHeader>
-                    <CardTitle>Upload you file here</CardTitle>
-                </CardHeader>
-                <CardDescription className="flex gap-6 flex-col px-6 [&>div]:w-full">
-                    <Dropzone
-                        dropZoneClassName="flex flex-col items-center border-2 border-dashed p-6 rounded-lg w-full"
-                        onDrop={(files: File[]) => handleFileDrop(files)}>
-                        {() => (
-                            <>
-                                <IoCloudUploadSharp className='text-5xl' />
-                                <div className='text-sm font-medium'>
-                                    Click or drag file to upload
-                                </div>
-                            </>
-                        )}
-                    </Dropzone>
-                    {file ?
-                        <div className="flex w-full flex-col">
-                            <Item variant="outline" className="w-full">
-                                <Avatar>
-                                    <AvatarFallback><FaRegFileAlt /></AvatarFallback>
-                                </Avatar>
-                                <ItemContent>
-                                    <ItemTitle>{file.name}</ItemTitle>
-                                    <ItemDescription>
-                                        {formatBytes(file.size)}
-                                    </ItemDescription>
-                                </ItemContent>
-                                <ItemActions>
-                                    <Button variant="outline" size="sm" className="text-red-400" onClick={() => { setFile(null) }}>
-                                        <IoTrash />
-                                    </Button>
-                                </ItemActions>
-                            </Item>
-                            <FieldGroup className="mt-6">
-                                <Field>
-                                    <FieldLabel htmlFor="title">Title</FieldLabel>
-                                    <Input id="title" type="text" placeholder="Title" value={formData.title} onChange={handleChange} />
-                                </Field>
-                                <Field>
-                                    <FieldLabel htmlFor="desc">Description</FieldLabel>
-                                    <Textarea id="desc" placeholder="Description" value={formData.desc} onChange={handleChange} />
-                                </Field>
-                            </FieldGroup>
-                        </div>
-                        : <></>
-                    }
+        <Card className="w-4xl flex-4">
+            <CardHeader>
+                <CardTitle>Uploader you file here</CardTitle>
+            </CardHeader>
+            <CardDescription className="flex gap-6 flex-col px-6 [&>div]:w-full">
+                <Dropzone
+                    dropZoneClassName="flex flex-col items-center border-2 border-dashed p-6 rounded-lg w-full"
+                    onDrop={(files: File[]) => handleFileDrop(files)}>
+                    {() => (
+                        <>
+                            <MdOutlineCloudUpload className='text-5xl' />
+                            <div className='text-sm font-medium'>
+                                Click or drag file to upload
+                            </div>
+                        </>
+                    )}
+                </Dropzone>
+                {file ?
+                    <div className="flex w-full flex-col">
+                        <Item variant="outline" className="w-full">
+                            <Avatar>
+                                <AvatarFallback><FaRegFileAlt /></AvatarFallback>
+                            </Avatar>
+                            <ItemContent>
+                                <ItemTitle>{file.name}</ItemTitle>
+                                <ItemDescription>
+                                    {formatBytes(file.size)}
+                                </ItemDescription>
+                            </ItemContent>
+                            <ItemActions>
+                                <Button variant="outline" size="sm" className="text-red-400" onClick={() => { setFile(null) }}>
+                                    <IoTrash />
+                                </Button>
+                            </ItemActions>
+                        </Item>
+                        <FieldGroup className="mt-6">
+                            <Field>
+                                <FieldLabel htmlFor="title">Title</FieldLabel>
+                                <Input id="title" type="text" placeholder="Title" value={formData.title} onChange={handleChange} />
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="desc">Description</FieldLabel>
+                                <Textarea id="desc" placeholder="Description" value={formData.desc} onChange={handleChange} />
+                            </Field>
+                        </FieldGroup>
+                    </div>
+                    : <></>
+                }
 
-                </CardDescription>
-                <CardFooter className="flex gap-6">
-                    <Button className="flex-1" variant="outline" id="clear-btn" onClick={() => { setFile(null) }}>Clear</Button>
-                    <Button className="flex-1">Upload</Button>
-                </CardFooter>
-            </Card>
-        </div >
+            </CardDescription>
+            <CardFooter className="flex gap-6">
+                <Button className="flex-1" variant="outline" id="clear-btn" onClick={() => { setFile(null) }}>Clear</Button>
+                <Button className="flex-1">Upload</Button>
+            </CardFooter>
+        </Card>
     )
 }

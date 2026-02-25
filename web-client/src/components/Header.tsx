@@ -4,6 +4,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { useNavigate } from "react-router-dom"
 import { Button } from "./ui/button"
+import { Badge } from "./ui/badge"
+import { ButtonGroup } from "./ui/button-group"
 
 export default function Header() {
     const { user, logout } = useAuth()
@@ -11,7 +13,11 @@ export default function Header() {
 
     return (
         <div className="flex justify-between items-center p-4">
-            <h1 className="text-2xl font-bold">Player</h1>
+            <Badge onClick={() => navigate("/")}><h1 className="text-2xl font-bold">S-File</h1></Badge>
+            <ButtonGroup>
+                <Button variant="outline" onClick={() => navigate("/upload")} disabled={!user}>Upload File</Button>
+                <Button variant="outline" onClick={() => navigate("/")}>Verify File</Button>
+            </ButtonGroup>
             <div className="flex items-center space-x-2">
                 <ModeToggle />
 
