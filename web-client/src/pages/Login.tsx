@@ -74,6 +74,11 @@ export default function Login() {
                             Register
                         </Link>
                     </p>
+                    <p className="text-sm text-center text-gray-400">
+                        <Link to="/" className="text-blue-400 underline hover:text-blue-500">
+                            Continue without an account
+                        </Link>
+                    </p>
                 </CardContent>
             </Card>
         </div>
