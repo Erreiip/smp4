@@ -8,7 +8,7 @@ use actix_web_httpauth::{
 	middleware::HttpAuthentication,
 };
 use crate::database::db_manager::{self, Database};
-use crate::api::controllers::{auth_controller, user_controller};
+use crate::api::controllers::{auth_controller, user_controller, file_controller};
 use crate::services::jwt_service::JwtService;
 
 pub struct AppState {
@@ -52,6 +52,7 @@ pub async fn start() -> std::io::Result<()> {
 				web::scope("")
 					.wrap(bearer_middleware)
 					.configure(user_controller::config)
+					.configure(file_controller::config)
 			)
     }).bind((expose_ip, expose_port_int))?
         .run()

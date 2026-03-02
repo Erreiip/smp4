@@ -53,12 +53,12 @@ export default function Login() {
                 <CardContent className="space-y-4">
                     <Field>
                         <FieldLabel htmlFor="username">Username</FieldLabel>
-                        <Input id="username" type="text" placeholder="Username" value={formData.username} onChange={handleChange} className={errors.username ? 'border-red-500' : ''} />
+                        <Input id="username" type="text" placeholder="Username" value={formData.username} onChange={handleChange} aria-invalid={!!errors.username} />
                         <FieldError>{errors.username}</FieldError>
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="password">Password</FieldLabel>
-                        <Input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className={errors.password ? 'border-red-500' : ''} />
+                        <Input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} aria-invalid={!!errors.password} />
                         <FieldError>{errors.password}</FieldError>
                     </Field>
                     <Button
@@ -72,6 +72,11 @@ export default function Login() {
                         No account?{" "}
                         <Link to="/register" className="text-blue-400 underline hover:text-blue-500">
                             Register
+                        </Link>
+                    </p>
+                    <p className="text-sm text-center text-gray-400">
+                        <Link to="/" className="text-blue-400 underline hover:text-blue-500">
+                            Continue without an account
                         </Link>
                     </p>
                 </CardContent>
