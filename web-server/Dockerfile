@@ -15,17 +15,19 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     clang \
     llvm \
+    protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
 RUN rustup target add x86_64-unknown-linux-musl
 
 # Copy sources
-COPY Cargo.toml Cargo.toml
-COPY src src
-COPY migrations migrations
+COPY Cargo.toml web-server/Cargo.toml
+COPY src web-server/src
+COPY ../lib/Cargo.toml lib/Cargo.toml
+COPY ../lib/src lib/src
 
 # Build the executable
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN cargo build --release --manifest-path web-server/Cargo.toml --target x86_64-unknown-linux-musl
 
 
 FROM alpine:3.19 AS server
@@ -48,7 +50,7 @@ RUN chown ${CUSTOM_USER}:${CUSTOM_USER} ${APP_PATH}
 
 # Copy the built executable
 COPY --from=builder --chown=${CUSTOM_USER}:${CUSTOM_USER} \
-  ${BUILD_PATH}/target/x86_64-unknown-linux-musl/release/SMP4_web_server \
+  ${BUILD_PATH}/web-server/target/x86_64-unknown-linux-musl/release/SMP4_web_server \
   SMP4_web_server
 
 EXPOSE 8888

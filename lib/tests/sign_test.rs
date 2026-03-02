@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use lib::sign::{signer::Signer, signer_dilithium2::SignerDilithium2, verifier::Verifier};
+    use smp4_common::sign::{signer::Signer, signer_dilithium2::SignerDilithium2, verifier::Verifier};
 
 
     #[test]

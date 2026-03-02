@@ -1,7 +1,7 @@
 mod tests {
     use std::any::Any;
 
-    use lib::hash::{hash_parser::HashParser, hasher::Hasher, hashsha3::HashSha3};
+    use smp4_common::hash::{hash_parser::HashParser, hasher::Hasher, hashsha3::HashSha3};
 
     #[test]
     fn hash_parse_test_not_working() {

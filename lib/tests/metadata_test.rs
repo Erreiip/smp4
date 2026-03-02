@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use lib::{
+    use smp4_common::{
         codec::cbor::{CborDecoder, CborEncoder},
         metadata::metadata::{MetadataDecoder, MetadataEncoder},
     };

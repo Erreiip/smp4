@@ -11,6 +11,12 @@ stages:
   - build
   - deploy
 
+✅lib-unit-tests:
+  stage: tests
+  image: rust:1.91.1
+  script:
+    - cargo test --manifest-path lib/Cargo.toml
+
 🐋front-build:
   stage: build
   image:
