@@ -8,11 +8,9 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import bkg from "../static/bkg.mp4";
 
 export default function Player() {
     const [file, setFile] = useState<File | null>();
-    const [video, setVideo] = useState<File | null>();
     const [loading, setLoading] = useState<boolean>(false)
     const [fieldData, setFieldData] = useState<{
         author?: string
@@ -78,26 +76,20 @@ export default function Player() {
         ">
             <div className="min-h-xl flex items-stretch gap-6">
                 <Card className="w-4xl flex-3">
-                    {!video ?
-                        <>
-                            <CardHeader>
-                                <CardTitle>Uploader you file here</CardTitle>
-                            </CardHeader>
-                            <CardDescription className="flex gap-6 flex-col px-6 [&>div]:w-full">
-                                <FilePicker handleCallBack={handleFileDrop} accept={{ "video/smp4": [".smp4"] }} file={file} setFile={setFile} />
-                            </CardDescription>
-                            {(file) &&
-                                <CardFooter className="flex gap-6">
-                                    <Button className="flex-1" variant="outline" id="clear-btn" onClick={() => { setFile(null) }}>Clear</Button>
-                                    <Button className="flex-1" onClick={() => { uploadFile() }}>{loading && <Spinner />}Verify</Button>
-                                </CardFooter>
-                            }
-                        </>
-                        :
-                        <video className="w-full h-full" controls>
-                            <source src={bkg} type="video/mp4" />
-                        </video>
-                    }
+                    <>
+                        <CardHeader>
+                            <CardTitle>Uploader you file here</CardTitle>
+                        </CardHeader>
+                        <CardDescription className="flex gap-6 flex-col px-6 [&>div]:w-full">
+                            <FilePicker handleCallBack={handleFileDrop} accept={{ "video/smp4": [".smp4"] }} file={file} setFile={setFile} />
+                        </CardDescription>
+                        {(file) &&
+                            <CardFooter className="flex gap-6">
+                                <Button className="flex-1" variant="outline" id="clear-btn" onClick={() => { setFile(null) }}>Clear</Button>
+                                <Button className="flex-1" onClick={() => { uploadFile() }}>{loading && <Spinner />}Verify</Button>
+                            </CardFooter>
+                        }
+                    </>
 
                 </Card>
                 <Card className="flex-2">
