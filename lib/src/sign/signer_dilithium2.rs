@@ -1,21 +1,21 @@
 use crystals_dilithium::dilithium2::Keypair;
 
-use crate::sign::{signer::Signer, verifier::Verifier};
 use crate::conf::conf::SEED;
+use crate::sign::{signer::Signer, verifier::Verifier};
 
 pub struct SignerDilithium2 {
     keypair: Keypair,
 }
 
 impl SignerDilithium2 {
-
     fn new(seed: &[u8]) -> Self {
-        SignerDilithium2 {keypair: Keypair::generate(Some(&seed)).unwrap()}
+        SignerDilithium2 {
+            keypair: Keypair::generate(Some(&seed)).unwrap(),
+        }
     }
 }
 
 impl Signer for SignerDilithium2 {
-
     fn create_sign() -> impl Signer {
         SignerDilithium2::new(SEED)
     }
@@ -31,7 +31,6 @@ impl Signer for SignerDilithium2 {
 }
 
 impl Verifier for SignerDilithium2 {
-
     fn create_verifier() -> impl Verifier {
         SignerDilithium2::new(SEED)
     }

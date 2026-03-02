@@ -8,12 +8,17 @@ pub struct TailEncoder<E: KeyValueEncoder> {
 }
 
 impl<E: KeyValueEncoder> TailEncoder<E> {
-
     pub const METADATA_START: &'static str = "metadata_start";
     pub const SIGNATURE_START: &'static str = "signature_start";
     pub const HASH_ALGS: &'static str = "hash_algs";
     pub const SIGN_ALG: &'static str = "sign_alg";
-    const MANDANTORY_FIELDS: [&'static str; 4] = [TailEncoder::<E>::METADATA_START, TailEncoder::<E>::SIGNATURE_START, TailEncoder::<E>::HASH_ALGS, TailEncoder::<E>::SIGN_ALG];
+
+    const MANDANTORY_FIELDS: [&'static str; 4] = [
+        TailEncoder::<E>::METADATA_START,
+        TailEncoder::<E>::SIGNATURE_START,
+        TailEncoder::<E>::HASH_ALGS,
+        TailEncoder::<E>::SIGN_ALG,
+    ];
 
     pub fn new(encoder: E) -> Self {
         Self {
@@ -27,10 +32,9 @@ impl<E: KeyValueEncoder> TailEncoder<E> {
     }
 
     fn check_fields(&self) -> bool {
-
         let mut has_all_fields = true;
         for field in TailEncoder::<E>::MANDANTORY_FIELDS {
-            if self.fields.contains_key(field) == false  {
+            if self.fields.contains_key(field) == false {
                 has_all_fields = false;
             }
         }
@@ -39,10 +43,9 @@ impl<E: KeyValueEncoder> TailEncoder<E> {
     }
 
     pub fn encode(&self) -> Result<Vec<u8>, CodecError> {
-
         match self.check_fields() {
             true => self.encoder.encode(self.fields.clone()),
-            false => Err(CodecError::Encode(String::from("Fields missing")))
+            false => Err(CodecError::Encode(String::from("Fields missing"))),
         }
     }
 }
