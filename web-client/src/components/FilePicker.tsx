@@ -8,7 +8,6 @@ import { Item, ItemContent, ItemTitle, ItemDescription, ItemActions } from "./ui
 
 interface AuthProviderProps {
     handleCallBack: (files: File[]) => void;
-    accept: any
     file: File | null | undefined;
     setFile: React.Dispatch<React.SetStateAction<File | null | undefined>>;
 }
@@ -23,12 +22,11 @@ function formatBytes(bytes: number) {
     return (bytes / Math.pow(k, i)).toFixed(2) + " " + units[i];
 }
 
-export default function FilePicker({ handleCallBack, accept, file, setFile }: AuthProviderProps) {
+export default function FilePicker({ handleCallBack, file, setFile }: AuthProviderProps) {
     return (
         <>
             {!file ?
                 <Dropzone
-                    accept={accept}
                     dropZoneClassName="flex flex-col items-center border-2 border-dashed p-6 rounded-lg w-full"
                     onDrop={(files: File[]) => handleCallBack(files)}
                 >

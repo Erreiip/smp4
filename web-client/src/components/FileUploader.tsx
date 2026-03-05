@@ -10,15 +10,18 @@ import FilePicker from "./FilePicker";
 
 export default function FileUploader() {
     const [file, setFile] = useState<File | null>();
-    const [extension, setExtension] = useState<string>("mp4");
     const [loading, setLoading] = useState<boolean>(false)
     const [formData, setFormData] = useState({
         name: '',
-        desc: ''
+        extension: '',
+        desc: '',
+        lisc: '',
+        link: ''
     })
     const [errors, setErrors] = useState<{
         name?: string
         desc?: string
+        extension?: string
     }>({})
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
@@ -30,10 +33,13 @@ export default function FileUploader() {
         let file = files[0]
         setFile(file)
         let filename = file.name
-        if (filename.includes("."))
+        let extension = ""
+        if (filename.includes(".")) {
             filename = filename.substring(0, filename.lastIndexOf("."));
+            extension = file.name.substring(file.name.lastIndexOf("."));
+        }
 
-        setFormData((prev) => ({ ...prev, name: filename }))
+        setFormData((prev) => ({ ...prev, name: filename, extension: extension }))
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -49,8 +55,8 @@ export default function FileUploader() {
             setErrors({ name: "* File name is required" })
             return
         }
-        if (!formData.desc) {
-            setErrors({ desc: "* File description is required" })
+        if (!formData.extension) {
+            setErrors({ extension: "* File extension is required" })
             return
         }
         try {
@@ -59,8 +65,10 @@ export default function FileUploader() {
 
             const jsonBlob = new Blob(
                 [JSON.stringify({
-                    name: `${formData.name}.${extension}`,
-                    description: formData.desc
+                    name: `${formData.name}${formData.extension}`,
+                    description: formData.desc,
+                    link: formData.link,
+                    licence: formData.lisc
                 })],
                 { type: "application/json" }
             );
@@ -111,7 +119,7 @@ export default function FileUploader() {
                 <CardTitle>Uploader you file here</CardTitle>
             </CardHeader>
             <CardDescription className="flex gap-6 flex-col px-6 [&>div]:w-full">
-                <FilePicker handleCallBack={handleFileDrop} accept={{ "video/mp4": [".mp4"] }} file={file} setFile={setFile} />
+                <FilePicker handleCallBack={handleFileDrop} file={file} setFile={setFile} />
             </CardDescription>
 
             {(file) && <>
@@ -120,25 +128,41 @@ export default function FileUploader() {
                         <Field>
                             <FieldLabel htmlFor="name">Name</FieldLabel>
                             <div className="flex gap-2">
-                                <Input id="name" type="text" placeholder="Name" value={formData.name} onChange={handleChange} aria-invalid={!!errors.name} />
-                                <Select defaultValue="mp4" onValueChange={setExtension}>
-                                    <SelectTrigger className="w-full max-w-48">
-                                        <SelectValue placeholder="Select a file type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="mp4">MP4</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
+                                <Input className="flex-4" id="name" type="text" placeholder="Name" value={formData.name} onChange={handleChange} aria-invalid={!!errors.name} />
+                                <Input className="flex-1" id="extension" type="text" placeholder="Extension" value={formData.extension} aria-invalid={!!errors.extension} disabled />
                             </div>
                             <FieldError>{errors.name}</FieldError>
                         </Field>
-
                         <Field>
                             <FieldLabel htmlFor="desc">Description</FieldLabel>
                             <Textarea id="desc" placeholder="Description" value={formData.desc} onChange={handleChange} aria-invalid={!!errors.desc} />
                             <FieldError>{errors.desc}</FieldError>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="link">Link</FieldLabel>
+                            <Input id="link" type="text" placeholder="Link" value={formData.link} onChange={handleChange} />
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="lisc">Liscence</FieldLabel>
+                            <Select defaultValue="mp4" onValueChange={(value) => setFormData((prev) => ({ ...prev, lisc: value }))}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a liscence" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="mit">MIT</SelectItem>
+                                    </SelectGroup>
+                                    <SelectGroup>
+                                        <SelectItem value="gpl3">GPL v3</SelectItem>
+                                    </SelectGroup>
+                                    <SelectGroup>
+                                        <SelectItem value="cc0">CC0</SelectItem>
+                                    </SelectGroup>
+                                    <SelectGroup>
+                                        <SelectItem value="bsd3">BSD 3</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </Field>
                     </FieldGroup>
                 </CardDescription>
