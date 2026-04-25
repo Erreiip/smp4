@@ -9,7 +9,7 @@ mod tests {
     use smp4_common::{
         hash::hash_enum::hash_enum::SHA3,
         metadata::metadata::MetadataFields,
-        sfile::sfile::{build_sfile, sfile_verify, truncate_sfile},
+        sfile::sfile::{build_sfile, sfile_metadata, sfile_verify, truncate_sfile},
         sign::sign_enum::sign_enum::DILITHIUM2,
     };
     use std::io::Write;
@@ -145,5 +145,34 @@ mod tests {
         let signature_result = sfile_verify(document_path.to_str().unwrap().to_string());
 
         assert_eq!(signature_result.unwrap(), true);
+    }
+
+    #[test]
+    fn test_metadata_correct() {
+        let dir = tempdir().expect("Directory creation error");
+        let file_path = dir.path().join("temporary.txt");
+        let mut file = File::create(&file_path).expect("File creation error");
+        writeln!(file, "Four").expect("Write error in file");
+
+        let file_path_str = file_path.clone().to_string_lossy().to_string();
+
+        let build_ret = build_sfile(
+            file_path_str.clone(),
+            get_fullfiled_metadata(),
+            SHA3,
+            DILITHIUM2,
+        );
+
+        assert_eq!(build_ret.is_ok(), true);
+        let document_path = build_ret.unwrap();
+        assert_eq!(
+            document_path,
+            file_path_str.clone().replace(".txt", ".stxt")
+        );
+
+        let metadata = sfile_metadata(document_path.to_str().unwrap().to_string());
+
+        assert_eq!(metadata.is_ok(), true);
+        assert_eq!(metadata.unwrap().get(MetadataFields::AUTHOR), get_fullfiled_metadata().get(MetadataFields::AUTHOR));
     }
 }

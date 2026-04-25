@@ -74,3 +74,15 @@ pub fn sfile_verify(document_path: String) -> Result<bool, String> {
         false => Err("Values aren't properly passed".to_string()),
     }
 }
+
+pub fn sfile_metadata(document_path: String) -> Result<HashMap<String, String>, String> {
+    println!("File path: {}", document_path);
+
+    match is_document_exist(&document_path) {
+        true => match SFileDecoder::metadata(&document_path) {
+            Ok(value) => return Ok(value),
+            Err(e) => return Err(e),
+        },
+        false => Err("Values aren't properly passed".to_string()),
+    }
+}

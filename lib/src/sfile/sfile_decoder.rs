@@ -7,13 +7,9 @@ use std::{
 };
 
 use crate::{
-    codec::cbor::CborDecoder,
-    hash::{hash_parser::HashParser, hasher::Hasher},
-    sfile::sfile_config::sfile_config::{
+    codec::cbor::CborDecoder, hash::{hash_parser::HashParser, hasher::Hasher}, metadata::metadata::MetadataDecoder, sfile::sfile_config::sfile_config::{
         MAGIC_BYTES_BUF, MAGIC_BYTES_BUF_SIZE, s_extension_transform,
-    },
-    sign::{sign_parser::SignParser, signer::Signer},
-    tail::tail::{TailDecode, TailFields},
+    }, sign::{sign_parser::SignParser, signer::Signer}, tail::tail::{TailDecode, TailFields}
 };
 
 pub struct SFileDecoder {}
@@ -164,6 +160,56 @@ impl SFileDecoder {
         }
 
         Ok(signer.verify(signature_buffer, hash_vec, document_size))
+    }
+
+    pub fn metadata(document_path: &str) -> Result<HashMap<String, String>, String> {
+        let mut file_document: File = OpenOptions::new()
+            .read(true)
+            .open(document_path)
+            .expect("File is Impossible to open");
+
+        let tail_position = match SFileDecoder::find_position(&mut file_document) {
+            Ok(value) => value,
+            Err(e) => return Err(e.to_string()),
+        };
+
+        let tail_map = match SFileDecoder::extract_tail(&mut file_document, tail_position) {
+            Ok(tail_map) => tail_map,
+            Err(e) => return Err(e.to_string()),
+        };
+
+        let metadata_start = match tail_map.get(TailFields::METADATA_START) {
+            Some(metadata_start_str) => match metadata_start_str.parse::<u64>() {
+                Ok(metadata_start) => metadata_start,
+                Err(e) => return Err(e.to_string()),
+            },
+            None => return Err("No field for signature start".to_string()),
+        };
+
+        let signature_start = match tail_map.get(TailFields::SIGNATURE_START) {
+            Some(signature_start_str) => match signature_start_str.parse::<u64>() {
+                Ok(signature_start) => signature_start,
+                Err(e) => return Err(e.to_string()),
+            },
+            None => return Err("No field for signature start".to_string()),
+        };
+
+        let metadata_size = signature_start - metadata_start;
+        let mut metadata_vec_buffer: Vec<u8> = vec![0; metadata_size as usize];
+        match file_document.seek(SeekFrom::Start(metadata_start)) {
+            Err(e) => return Err(e.to_string()),
+            _ => {}
+        }
+        match file_document.read_exact(&mut metadata_vec_buffer) {
+            Err(e) => return Err(e.to_string()),
+            _ => {}
+        };
+
+        let mut decoder = MetadataDecoder::new(CborDecoder::default());
+        match decoder.decode(&metadata_vec_buffer) {
+            Ok(map) => Ok(map),
+            Err(e) => Err(e.to_string()),
+        }
     }
 
     pub fn truncate(document_path: &str) -> Result<PathBuf, String> {
