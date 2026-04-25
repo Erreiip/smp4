@@ -5,3 +5,5 @@ pub mod tail;
 
 pub mod conf;
 pub mod hash;
+
+pub mod sign;
