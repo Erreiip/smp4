@@ -1,6 +1,19 @@
 use std::collections::HashMap;
 
-use crate::codec::codec::{CodecError, KeyValueDecoder, KeyValueEncoder};
+use crate::{codec::codec::{CodecError, KeyValueDecoder, KeyValueEncoder}, common::parser_utils::parser_utils::check_fields};
+
+pub struct MetadataFields {}
+
+impl MetadataFields {
+    pub const AUTHOR: &'static str = "author";
+    pub const DATE: &'static str = "date";
+    pub const OID: &'static str = "OID";
+    pub const DESCRIPTION: &'static str = "description";
+    pub const EMAIL: &'static str = "email";
+    pub const LICENSE: &'static str = "license";
+    pub const LINK_ORIGIN: &'static str = "link_origin";
+    pub const MANDANTORY_FIELDS: [&'static str; 1] = [MetadataFields::AUTHOR];
+}
 
 pub struct MetadataEncoder<E: KeyValueEncoder> {
     fields: HashMap<String, String>,
@@ -8,6 +21,7 @@ pub struct MetadataEncoder<E: KeyValueEncoder> {
 }
 
 impl<E: KeyValueEncoder> MetadataEncoder<E> {
+
     pub fn new(encoder: E) -> Self {
         Self {
             fields: HashMap::new(),
@@ -20,7 +34,11 @@ impl<E: KeyValueEncoder> MetadataEncoder<E> {
     }
 
     pub fn encode(&self) -> Result<Vec<u8>, CodecError> {
-        self.encoder.encode(self.fields.clone())
+
+        match check_fields(self.fields.clone(), MetadataFields::MANDANTORY_FIELDS.to_vec()) {
+            true => self.encoder.encode(self.fields.clone()),
+            false => Err(CodecError::Encode(String::from("Fields missing")))
+        }
     }
 }
 

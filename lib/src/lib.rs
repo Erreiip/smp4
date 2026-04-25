@@ -8,3 +8,5 @@ pub mod hash;
 pub mod smp4;
 
 pub mod sign;
+
+pub mod common;

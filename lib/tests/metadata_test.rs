@@ -2,7 +2,7 @@
 mod tests {
     use smp4_common::{
         codec::cbor::{CborDecoder, CborEncoder},
-        metadata::metadata::{MetadataDecoder, MetadataEncoder},
+        metadata::metadata::{MetadataDecoder, MetadataEncoder, MetadataFields},
     };
     use pretty_assertions::assert_eq;
     use std::collections::HashMap;
@@ -10,9 +10,9 @@ mod tests {
     #[test]
     fn test_codec_cbor() {
         let mut expected: HashMap<String, String> = HashMap::new();
-        expected.insert("author".to_string(), "John Doe".to_string());
+        expected.insert(MetadataFields::AUTHOR.to_string(), "John Doe".to_string());
         expected.insert(
-            "oid".to_string(),
+            MetadataFields::OID.to_string(),
             "d023957e-37dd-449e-b324-8a3e499b5c46".to_string(),
         );
         expected.insert("foo".to_string(), "bar".to_string());
