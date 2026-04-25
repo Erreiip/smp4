@@ -1,11 +1,14 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use crate::{
     common::parser_utils::parser_utils::check_fields,
     hash::hash_parser::HashParser,
     metadata::metadata::MetadataFields,
+    sfile::{sfile_decoder::SFileDecoder, sfile_encoder::SFileEncoder},
     sign::sign_parser::SignParser,
-    smp4::{smp4_decoder::SMP4Decoder, smp4_encoder::SMP4Encoder},
 };
 
 fn is_document_exist(document_path: &str) -> bool {
@@ -29,35 +32,45 @@ fn is_values_correct(
         && SignParser::parse_algo(sign_algo).is_some()
 }
 
-pub fn build_smp4(
+pub fn build_sfile(
     document_path: String,
     metadata: HashMap<String, String>,
     hash_algos: &str,
     sign_algo: &str,
-) -> String {
+) -> Result<PathBuf, String> {
     println!("File path: {} | metadata: {:?}", document_path, metadata);
 
     match is_values_correct(&document_path, metadata.clone(), hash_algos, sign_algo) {
         true => {
-            match SMP4Encoder::encode(&document_path, metadata.clone(), hash_algos, sign_algo) {
-                Ok(value) => return value,
-                Err(err) => return err,
+            match SFileEncoder::encode(&document_path, metadata.clone(), hash_algos, sign_algo) {
+                Ok(value) => return Ok(value),
+                Err(err) => return Err(err),
             }
         }
-        false => "".to_string(),
+        false => Err("Values aren't properly passed".to_string()),
     }
 }
 
-pub fn truncate_smp4(document_path: String) -> String {
+pub fn truncate_sfile(document_path: String) -> Result<PathBuf, String> {
     println!("File path: {}", document_path);
 
     match is_document_exist(&document_path) {
-        true => {
-            match SMP4Decoder::truncate(&document_path) {
-                Ok(value) => return value,
-                Err(e) => return e,
-            }
-        }
-        false => "".to_string(),
+        true => match SFileDecoder::truncate(&document_path) {
+            Ok(value) => return Ok(value),
+            Err(e) => return Err(e),
+        },
+        false => Err("Values aren't properly passed".to_string()),
+    }
+}
+
+pub fn sfile_verify(document_path: String) -> Result<bool, String> {
+    println!("File path: {}", document_path);
+
+    match is_document_exist(&document_path) {
+        true => match SFileDecoder::verify(&document_path) {
+            Ok(value) => return Ok(value),
+            Err(e) => return Err(e),
+        },
+        false => Err("Values aren't properly passed".to_string()),
     }
 }

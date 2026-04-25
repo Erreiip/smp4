@@ -1,7 +1,11 @@
 #[cfg(test)]
 mod tests {
 
-    use std::{collections::HashMap, fs::{File, OpenOptions}, io::{Read, Write}};
+    use std::{
+        collections::HashMap,
+        fs::{File, OpenOptions},
+        io::{Read, Write},
+    };
 
     use pretty_assertions::assert_eq;
     use smp4_common::{
@@ -65,11 +69,15 @@ mod tests {
             .expect("File is Impossible to open");
 
         let mut buffer_read: Vec<u8> = Vec::new();
-        file_document.read_to_end(&mut buffer_read).expect("Read error");
+        file_document
+            .read_to_end(&mut buffer_read)
+            .expect("Read error");
 
         let mut decoder = TailDecode::new(CborDecoder::default());
 
-        let decoded = decoder.decode(&buffer_read).expect("Cannot decode the content");
+        let decoded = decoder
+            .decode(&buffer_read)
+            .expect("Cannot decode the content");
 
         assert_eq!(expected, decoded);
     }

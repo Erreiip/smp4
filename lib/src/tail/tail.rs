@@ -33,6 +33,12 @@ impl<E: KeyValueEncoder> TailEncoder<E> {
         }
     }
 
+    pub fn append_entry(&mut self, tail: HashMap<String, String>) {
+        for (key, value) in tail {
+            self.add_entry(key, value);
+        }
+    }
+
     pub fn add_entry(&mut self, key: impl Into<String>, value: impl Into<String>) {
         self.fields.insert(key.into(), value.into());
     }

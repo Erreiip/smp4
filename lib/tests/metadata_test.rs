@@ -5,8 +5,12 @@ mod tests {
         codec::cbor::{CborDecoder, CborEncoder},
         metadata::metadata::{MetadataDecoder, MetadataEncoder, MetadataFields},
     };
+    use std::{
+        collections::HashMap,
+        fs::{File, OpenOptions},
+        io::{Read, Write},
+    };
     use tempfile::tempdir;
-    use std::{collections::HashMap, fs::{File, OpenOptions}, io::{Read, Write}};
 
     #[test]
     fn test_codec_cbor() {
@@ -51,10 +55,7 @@ mod tests {
             MetadataFields::OID.to_string(),
             "d023957e-37dd-449e-b324-8a3e499b5c46".to_string(),
         );
-        expected.insert(
-            MetadataFields::EMAIL.to_string(),
-            "100".to_string(),
-        );
+        expected.insert(MetadataFields::EMAIL.to_string(), "100".to_string());
 
         let mut encoder = MetadataEncoder::new(CborEncoder::default());
 
@@ -85,11 +86,15 @@ mod tests {
             .expect("File is Impossible to open");
 
         let mut buffer_read: Vec<u8> = Vec::new();
-        file_document.read_to_end(&mut buffer_read).expect("Read error");
+        file_document
+            .read_to_end(&mut buffer_read)
+            .expect("Read error");
 
         let mut decoder = MetadataDecoder::new(CborDecoder::default());
 
-        let decoded = decoder.decode(&buffer_read).expect("Cannot decode the content");
+        let decoded = decoder
+            .decode(&buffer_read)
+            .expect("Cannot decode the content");
 
         assert_eq!(expected, decoded);
     }

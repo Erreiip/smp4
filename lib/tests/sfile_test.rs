@@ -9,8 +9,8 @@ mod tests {
     use smp4_common::{
         hash::hash_enum::hash_enum::SHA3,
         metadata::metadata::MetadataFields,
+        sfile::sfile::{build_sfile, sfile_verify, truncate_sfile},
         sign::sign_enum::sign_enum::DILITHIUM2,
-        smp4::smp4_builder::{build_smp4, truncate_smp4},
     };
     use std::io::Write;
     use tempfile::tempdir;
@@ -23,14 +23,14 @@ mod tests {
 
     #[test]
     fn smp4_encode_bad_input() {
-        let build_ret: String = build_smp4(
+        let build_ret = build_sfile(
             "DoesNotExist".to_string(),
             get_fullfiled_metadata(),
             SHA3,
             DILITHIUM2,
         );
 
-        assert_eq!(build_ret, "".to_string())
+        assert_eq!(build_ret.is_err(), true);
     }
 
     #[test]
@@ -42,20 +42,25 @@ mod tests {
 
         let file_path_str = file_path.clone().to_string_lossy().to_string();
 
-        let build_ret: String = build_smp4(
+        let build_ret = build_sfile(
             file_path_str.clone(),
             get_fullfiled_metadata(),
             SHA3,
             DILITHIUM2,
         );
 
-        assert_eq!(build_ret, file_path_str.clone().replace(".txt", ".stxt")); // TODO: change this to change only the endfile extension
+        assert_eq!(build_ret.is_ok(), true);
+        let document_path = build_ret.unwrap();
+        assert_eq!(
+            document_path,
+            file_path_str.clone().replace(".txt", ".stxt")
+        );
 
         /* Read the start of the file to verify that it isn't corrupted */
         let buffer: &mut [u8] = &mut [0; 4];
         let mut file_document = OpenOptions::new()
             .read(true)
-            .open(build_ret)
+            .open(document_path)
             .expect("File is Impossible to open");
         file_document
             .read_exact(buffer)
@@ -69,9 +74,9 @@ mod tests {
 
     #[test]
     fn smp4_truncate_bad_input() {
-        let truncate_path: String = truncate_smp4("DoesNotExist".to_string());
+        let truncate_path = truncate_sfile("DoesNotExist".to_string());
 
-        assert_eq!(truncate_path, "".to_string())
+        assert_eq!(truncate_path.is_err(), true)
     }
 
     #[test]
@@ -83,19 +88,62 @@ mod tests {
 
         let file_path_str = file_path.clone().to_string_lossy().to_string();
 
-        let build_ret: String = build_smp4(
+        let build_ret = build_sfile(
             file_path_str.clone(),
             get_fullfiled_metadata(),
             SHA3,
             DILITHIUM2,
         );
 
-        assert_eq!(build_ret, file_path_str.clone().replace(".txt", ".stxt"));
-
-        let truncate_path: String = truncate_smp4(
-            build_ret.clone(),
+        assert_eq!(build_ret.is_ok(), true);
+        let mut document_path = build_ret.unwrap();
+        assert_eq!(
+            document_path,
+            file_path_str.clone().replace(".txt", ".stxt")
         );
 
-        assert_eq!(truncate_path, build_ret.replace(".stxt", ".txt"));
+        let truncate_path = truncate_sfile(document_path.to_str().unwrap().to_string());
+
+        assert_eq!(truncate_path.is_ok(), true);
+        let document_truncate_path = truncate_path.unwrap();
+        document_path.set_extension("txt");
+        assert_eq!(document_truncate_path, document_path);
+    }
+
+    #[test]
+    fn test_signature_incorrect() {
+        let signature_result = sfile_verify("DoesNotExist".to_string());
+
+        assert_eq!(signature_result.is_err(), true);
+    }
+
+    /* TODO: There must be a signature incorrect test, like one byte modified in the file */
+
+    #[test]
+    fn test_signature_correct() {
+        let dir = tempdir().expect("Directory creation error");
+        let file_path = dir.path().join("temporary.txt");
+        let mut file = File::create(&file_path).expect("File creation error");
+        writeln!(file, "Four").expect("Write error in file");
+
+        let file_path_str = file_path.clone().to_string_lossy().to_string();
+
+        let build_ret = build_sfile(
+            file_path_str.clone(),
+            get_fullfiled_metadata(),
+            SHA3,
+            DILITHIUM2,
+        );
+
+        assert_eq!(build_ret.is_ok(), true);
+        let document_path = build_ret.unwrap();
+        assert_eq!(
+            document_path,
+            file_path_str.clone().replace(".txt", ".stxt")
+        );
+
+        let signature_result = sfile_verify(document_path.to_str().unwrap().to_string());
+
+        assert_eq!(signature_result.unwrap(), true);
     }
 }

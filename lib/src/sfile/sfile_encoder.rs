@@ -2,33 +2,40 @@ use std::{
     collections::HashMap,
     fs::{self, OpenOptions},
     io::Write,
-    path::Path,
+    path::PathBuf,
 };
 
 use crate::{
-    codec::cbor::CborEncoder, hash::{hash_parser::HashParser, hasher::Hasher}, metadata::metadata::MetadataEncoder, sign::{sign_parser::SignParser, signer::Signer}, smp4::smp4_config::smp4_config::{MAGIC_BYTES_BUF, MAGIC_BYTES_BUF_SIZE}, tail::tail::{TailEncoder, TailFields}
+    codec::cbor::CborEncoder,
+    hash::{hash_parser::HashParser, hasher::Hasher},
+    metadata::metadata::MetadataEncoder,
+    sfile::sfile_config::sfile_config::{
+        MAGIC_BYTES_BUF, MAGIC_BYTES_BUF_SIZE, extension_transform,
+    },
+    sign::{sign_parser::SignParser, signer::Signer},
+    tail::tail::{TailEncoder, TailFields},
 };
 
-pub struct SMP4Encoder {}
+pub struct SFileEncoder {}
 
-impl SMP4Encoder {
+impl SFileEncoder {
     pub fn encode(
         document_path: &str,
         metadata: HashMap<String, String>,
         hash_algos: &str,
         sign_algo: &str,
-    ) -> Result<String, String> {
-        let document = Path::new(document_path);
+    ) -> Result<PathBuf, String> {
+        let mut document_pathbuf = PathBuf::from(document_path);
         let mut file_document = OpenOptions::new()
             .append(true)
-            .open(document)
+            .open(document_pathbuf.clone())
             .expect("File is Impossible to open");
 
         let document_metadata = file_document
             .metadata()
             .expect("Metadata of the file can't be read");
         let document_size = document_metadata.len();
-        let document_value = match fs::read(document) {
+        let document_value = match fs::read(document_pathbuf.clone()) {
             Ok(value) => value,
             Err(e) => return Err(e.to_string()),
         };
@@ -74,8 +81,11 @@ impl SMP4Encoder {
             hash_vec.append(&mut hasher.finalize());
         }
 
-        let sfile_size = document_size + metadata_size + signer.size() + MAGIC_BYTES_BUF_SIZE as u64 + tail_size;
+        let sfile_size =
+            document_size + metadata_size + signer.size() + MAGIC_BYTES_BUF_SIZE as u64 + tail_size;
         let signature = signer.sign(hash_vec, sfile_size);
+
+        println!("{:?}", sfile_size);
 
         match file_document.write_all(&encoded_metadata) {
             Err(e) => return Err(e.to_string()),
@@ -97,8 +107,16 @@ impl SMP4Encoder {
             _ => {}
         };
 
-        match fs::rename(document_path, document_path.replace(".txt", ".stxt")) {
-            Ok(_) => Ok(document_path.replace(".txt", ".stxt")),
+        let extension = match document_pathbuf.extension() {
+            Some(value) => value.to_str().unwrap(),
+            None => return Err("Error during extension extract of the current file".to_string()),
+        };
+        let new_extension = extension_transform(extension);
+
+        document_pathbuf.set_extension(new_extension);
+
+        match fs::rename(document_path, document_pathbuf.clone()) {
+            Ok(_) => Ok(document_pathbuf),
             Err(e) => Err(e.to_string()),
         }
     }
