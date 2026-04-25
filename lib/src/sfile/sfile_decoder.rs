@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-    codec::cbor::{CborDecoder},
+    codec::cbor::CborDecoder,
     hash::{hash_parser::HashParser, hasher::Hasher},
     sfile::sfile_config::sfile_config::{
         MAGIC_BYTES_BUF, MAGIC_BYTES_BUF_SIZE, s_extension_transform,

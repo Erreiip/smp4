@@ -3,12 +3,13 @@ use std::{
     fs::{self, OpenOptions},
     io::Write,
     path::PathBuf,
+    time::SystemTime,
 };
 
 use crate::{
     codec::cbor::CborEncoder,
     hash::{hash_parser::HashParser, hasher::Hasher},
-    metadata::metadata::MetadataEncoder,
+    metadata::metadata::{MetadataEncoder, MetadataFields},
     sfile::sfile_config::sfile_config::{
         MAGIC_BYTES_BUF, MAGIC_BYTES_BUF_SIZE, extension_transform,
     },
@@ -42,6 +43,12 @@ impl SFileEncoder {
 
         let mut metadata_encoder = MetadataEncoder::new(CborEncoder::default());
         metadata_encoder.append_entry(metadata);
+        let now = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+            Ok(value) => value,
+            Err(e) => return Err(e.to_string()),
+        };
+        metadata_encoder.add_entry(MetadataFields::DATE, now.as_secs().to_string());
+
         let encoded_metadata = match metadata_encoder.encode() {
             Ok(value) => value,
             Err(e) => return Err(e.to_string()),
