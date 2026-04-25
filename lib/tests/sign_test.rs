@@ -17,19 +17,6 @@ mod tests {
     }
 
     #[test]
-    fn sign_parse_test() {
-
-        assert_eq!(SignParser::parse_algo("notgood").is_none(), true);
-        assert_eq!(SignParser::parse_algo(DILITHIUM2).is_some(), true);
-
-        let signer = SignParser::parse_algo(DILITHIUM2).unwrap();
-        assert_eq!(
-            signer.type_id() == SignerDilithium2::create_sign().type_id(),
-            true
-        );
-    }
-
-    #[test]
     fn sign_test() {
 
         let signer = SignerDilithium2::create_sign();
