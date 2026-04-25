@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::{codec::codec::{CodecError, KeyValueDecoder, KeyValueEncoder}, common::parser_utils::parser_utils::check_fields};
+use crate::{
+    codec::codec::{CodecError, KeyValueDecoder, KeyValueEncoder},
+    common::parser_utils::parser_utils::check_fields,
+};
 
 pub struct MetadataFields {}
 
@@ -21,11 +24,16 @@ pub struct MetadataEncoder<E: KeyValueEncoder> {
 }
 
 impl<E: KeyValueEncoder> MetadataEncoder<E> {
-
     pub fn new(encoder: E) -> Self {
         Self {
             fields: HashMap::new(),
             encoder,
+        }
+    }
+
+    pub fn append_entry(&mut self, metadata: HashMap<String, String>) {
+        for (key, value) in metadata {
+            self.add_entry(key, value);
         }
     }
 
@@ -34,10 +42,12 @@ impl<E: KeyValueEncoder> MetadataEncoder<E> {
     }
 
     pub fn encode(&self) -> Result<Vec<u8>, CodecError> {
-
-        match check_fields(self.fields.clone(), MetadataFields::MANDANTORY_FIELDS.to_vec()) {
+        match check_fields(
+            self.fields.clone(),
+            MetadataFields::MANDANTORY_FIELDS.to_vec(),
+        ) {
             true => self.encoder.encode(self.fields.clone()),
-            false => Err(CodecError::Encode(String::from("Fields missing")))
+            false => Err(CodecError::Encode(String::from("Fields missing"))),
         }
     }
 }
